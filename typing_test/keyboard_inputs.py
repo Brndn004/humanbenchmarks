@@ -119,28 +119,19 @@ _HTML_REPLACEMENTS = {'<div class="letters" tabindex="1">':'',
                       '</div>':'',
                       '\'':'\\\''}
 
-def get_dur(string, wpm):
-    '''Calculates the time to sleep between words in order to reach the
-    specified words per minute.
-
-    Args:
-        string: desired string to type
-        wpm: desired words per minute
-
-    Returns:
-        necessary duration to sleep between words to reach the desired wpm
-    '''
-    words = 1
-    for cc in string:
-        if cc == ' ':
-            words += 1
-    print words/float(wpm)/60
-    return words/float(wpm)/60
 
 def get_string_from_html(html_str):
     for i, j in _HTML_REPLACEMENTS.iteritems():
         html_str = html_str.replace(i, j)
     return html_str
+
+
+def get_dur(string, wpm):
+    '''wpm = (5 * number of characters) / (time taken)'''
+    wps = wpm/60.0
+    num_char = len(string)
+    return 60.0 / (5.0 * wpm)
+
 
 class Keyboard(object):
 
@@ -157,8 +148,7 @@ class Keyboard(object):
             self._keyboard.emit_click(_KEYS[char])
 
     def type(self, string, wpm = 172, err_pct_goal = 99):
-        dur = 60.0/wpm
-        count = 0
+        dur = 60.0 / (5.0 * wpm) * err_pct_goal / 100.0
         for cc in string:
             if random.random() > err_pct_goal/100.0:
                 self.emit_click('e')
@@ -168,11 +158,7 @@ class Keyboard(object):
                     uppercase = True
                     cc = cc.lower()
                 self.emit_click(cc, is_upper = uppercase)
-                if cc == ' ':
-                    sleep(dur)
-                if count == 2: # Need to sleep once more in this loop to get exact wpm
-                    sleep(dur)
-            count += 1
+            sleep(dur)
 
 
 if __name__ == '__main__':
